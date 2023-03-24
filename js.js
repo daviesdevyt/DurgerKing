@@ -69,11 +69,6 @@ var Cafe = {
     var counterEl = $('.js-item-counter', itemEl);
     counterEl.text(count ? count : 1);
     var isSelected = itemEl.hasClass('selected');
-    if (!isSelected && count > 0) {
-      $('.js-item-lottie', itemEl).each(function () {
-        RLottie.playOnce(this);
-      });
-    }
     var anim_name = isSelected ? (delta > 0 ? 'badge-incr' : (count > 0 ? 'badge-decr' : 'badge-hide')) : 'badge-show';
     var cur_anim_name = counterEl.css('animation-name');
     if ((anim_name == 'badge-incr' || anim_name == 'badge-decr') && anim_name == cur_anim_name) {
@@ -207,9 +202,6 @@ var Cafe = {
     }
     if (mode_order) {
       var height = $('.cafe-items').height();
-      $('.js-item-lottie').each(function () {
-        RLottie.pause(this);
-      });
       $('.cafe-order-overview').show();
       $('.cafe-items').css('maxHeight', height).redraw();
       $('body').addClass('order-mode');
@@ -219,15 +211,10 @@ var Cafe = {
       Telegram.WebApp.expand();
       Telegram.WebApp.BackButton.show();
     } else {
-      $('.js-item-lottie').each(function () {
-        RLottie.reset(this);
-      });
       $('body').removeClass('order-mode');
       setTimeout(function () {
         $('.cafe-items').css('maxHeight', '');
         $('.cafe-order-overview').hide();
-        $('.js-item-lottie').each(function () {
-        });
       }, anim_duration);
       Telegram.WebApp.BackButton.hide();
     }
