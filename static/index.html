@@ -1,0 +1,89 @@
+<html class="light" style="--tg-viewport-height: 100vh; --tg-viewport-stable-height: 100vh">
+  <head>
+    <meta charset="utf-8" />
+    <title>DurgerKingBot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="MobileOptimized" content="176" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="robots" content="noindex, nofollow" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      function setThemeClass() {
+        document.documentElement.className = Telegram.WebApp.colorScheme;
+      }
+      Telegram.WebApp.onEvent("themeChanged", setThemeClass);
+      setThemeClass();
+    </script>
+    <link href="/css.css" rel="stylesheet" />
+  </head>
+  <body>
+    <section class="cafe-page cafe-items">
+      {% for i in product_ids %}
+      {% set product = products[i] %}
+      <div class="cafe-item js-item" data-item-id="{{i}}" data-item-price="{{product.price}}">
+        <div class="cafe-item-counter js-item-counter">1</div>
+        <div class="cafe-item-photo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Sky-and-Trees_133720-480x360_%284791867423%29.jpg" style="width: 100%; height: 100%;">
+        </div>
+        <div class="cafe-item-label">
+          <span class="cafe-item-title">{{product.title}}</span>
+          <span class="cafe-item-price">${{product.price|int/1000}}</span>
+        </div>
+        <div class="cafe-item-buttons">
+          <button class="cafe-item-decr-button js-item-decr-btn button-item">
+            <span class="ripple-mask"><span></span></span>
+          </button>
+          <button class="cafe-item-incr-button js-item-incr-btn button-item">
+            <span class="button-item-label">Add</span>
+            <span class="ripple-mask"><span></span></span>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    <section class="cafe-page cafe-order-overview">
+      <div class="cafe-block">
+        <div class="cafe-order-header-wrap">
+          <h2 class="cafe-order-header">Your Order</h2>
+          <span class="cafe-order-edit js-order-edit">Edit</span>
+        </div>
+        <div class="cafe-order-items">
+          {% for i in product_ids %}
+          {% set product = products[i] %}
+          <div class="cafe-order-item js-order-item" data-item-id="{{i}}">
+            <div class="cafe-order-item-photo">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Sky-and-Trees_133720-480x360_%284791867423%29.jpg" style="width: 100%; height: 100%;">
+            </div>
+            <div class="cafe-order-item-label">
+              <div class="cafe-order-item-title">
+                {{product.title}} <span class="cafe-order-item-counter"><span class="js-order-item-counter">1</span>x</span>
+              </div>
+              <div class="cafe-order-item-description">Meat™</div>
+            </div>
+            <div class="cafe-order-item-price js-order-item-price">${{product.price|int/1000}}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="cafe-text-field-wrap">
+        <textarea
+          class="cafe-text-field js-order-comment-field cafe-block"
+          rows="1"
+          placeholder="Enter your Email Address"
+          style="overflow: hidden visible; overflow-wrap: break-word"
+        ></textarea>
+        <div class="cafe-text-field-hint">This field is required to proceed</div>
+      </div>
+    </section>
+    <div class="cafe-status-wrap">
+      <div class="cafe-status js-status"></div>
+    </div>
+    <script src="https://tg.dev/js/jquery.min.js"></script>
+    <script src="/js.js"></script>
+    <script>
+      Cafe.init();
+    </script>
+  </body>
+</html>

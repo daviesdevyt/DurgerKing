@@ -3,7 +3,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 bot = TeleBot("5998267047:AAFegC1eFwnk3eySSkxI8h6ZJ9C8IOA-1eM")
 
-web_app = WebAppInfo(url="https://ideahold.github.io/")
+web_app = WebAppInfo(url="https://durger-king-five.vercel.app/")
 
 order_inline_btn = InlineKeyboardButton("Order", web_app=web_app)
 
