@@ -1,41 +1,40 @@
 from flask import Flask, request, render_template, Response, jsonify
-from sellix import Sellix
-import os, dotenv, json
-
-dotenv.load_dotenv()
-
-client = Sellix(os.getenv("API_KEY"))
-
-# gateways = ["PAYPAL", "ETHEREUM", "BINANCE_COIN", "BITCOIN", "BITCOIN_CASH", "LITECOIN", "SKRILL", "STRIPE", "PERFECT_MONEY", "CASH_APP",
-#             "LEX_HOLDINGS_GROUP", "PAYDASH", "MONERO", "CONCORDIUM", "BITCOIN_LN", "NANO", "SOLANA", "RIPPLE", "USDT", "USDC", "PLZ", "POLYGON", "TRON", "BINANCE"]
-gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "USDT", "USDC", "POLYGON", "TRON", "BINANCE"]
-
-with open("db.json") as f:
-    products = json.load(f)
+from flask_sqlalchemy import SQLAlchemy
+import threading
+from flask_migrate import Migrate
 
 app = Flask(__name__, template_folder="./static",static_url_path='', 
             static_folder='./static')
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://fsnnluat:t67qU_x6IxPN-EoKcFmhRCD54we9qz30@mahmud.db.elephantsql.com/fsnnluat'
+app.config['SECRET_KEY'] = '1f601a5ffe473ae4da49cd43ec646d3f'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+from .models import User
+from .bot import bot, owner, edit_message
+
 @app.route("/")
 def home():
-    return render_template("index.html", product_ids=list(products), products=products)
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return Response("Could not access this page. Got to @bot")
+    return render_template("index.html", user_id=user_id)
 
-@app.route("/make-order", methods=["GET", "POST"])
-def pay():
-    try:
-        email = request.form["email"]
-        if email == "":
-            return Response("Your email is required")
-        orders = json.loads(request.form["order_data"])
-        total = 0
-        for i in orders:
-            total += float(products[str(i["id"])]["price"])/1000*i["count"]
-    except Exception as e:
-        return Response("Invalid request")
-    res = client.create_payment(title="Your Order", value=total, currency="USD", email=email,
-                                white_label=False, gateways=gateways, return_url=request.referrer+"success")
-    return jsonify(res)
-
-@app.route("/success")
+@app.route("/subscribed")
 def success():
-    return Response("Your product is on its way !!")
+    uid = request.form["custom_fields"]["user_id"]
+    user = User(uid=int(uid))
+    message = bot.send_message(uid, "Thank you for your order!\nYour advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
+    edit_message(message)
+    bot.send_message(owner, f"@{bot.get_chat(uid).username} just subscribed for {request.form['product_title']}. The message will come soon")
+    db.session.add(user)
+    db.session.commit()
+    return Response("Subscription sucessful")
+
+def start_poll():
+    print("Started bot")
+    bot.infinity_polling()
+
+threading.Thread(target=start_poll, daemon=True).start()
