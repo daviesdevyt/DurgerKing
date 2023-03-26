@@ -1,6 +1,6 @@
-from flask import Flask, request, render_template, Response, jsonify
+from flask import Flask, request, render_template, Response, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
-import threading
+import telebot
 from flask_migrate import Migrate
 
 app = Flask(__name__, template_folder="./static",static_url_path='', 
@@ -9,6 +9,7 @@ app = Flask(__name__, template_folder="./static",static_url_path='',
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://fsnnluat:t67qU_x6IxPN-EoKcFmhRCD54we9qz30@mahmud.db.elephantsql.com/fsnnluat'
 app.config['SECRET_KEY'] = '1f601a5ffe473ae4da49cd43ec646d3f'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -22,6 +23,16 @@ def home():
         return Response("Could not access this page. Got to @bot")
     return render_template("index.html", user_id=user_id)
 
+@app.route("/telegram/", methods=["POST"])
+def telegram_bot():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    else:
+        abort(403)
+
 @app.route("/subscribed")
 def success():
     uid = request.form["custom_fields"]["user_id"]
@@ -33,8 +44,7 @@ def success():
     db.session.commit()
     return Response("Subscription sucessful")
 
-def start_poll():
-    print("Started bot")
-    bot.infinity_polling()
+WEBHOOK_URL = "https://durger-king-five.vercel.app/telegram/"
 
-threading.Thread(target=start_poll, daemon=True).start()
+bot.remove_webhook()
+bot.set_webhook(url=WEBHOOK_URL)

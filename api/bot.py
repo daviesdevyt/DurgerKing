@@ -48,4 +48,3 @@ def echo_message(message: Message):
         bot.send_message(owner, f"Message from @{message.chat.username}\n\n{message.text}")
         return
     start(message)
-
