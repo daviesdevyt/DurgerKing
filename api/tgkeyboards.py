@@ -1,7 +1,8 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from .config import url
 
 def start_inline_markup(user_id):
-    web_app = WebAppInfo(url=f"https://durger-king-five.vercel.app?user_id={user_id}")
+    web_app = WebAppInfo(url=url+f"?user_id={user_id}")
     order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
     account_inline_btn = InlineKeyboardButton("ACCOUNT", callback_data="account")
     support_inline_btn = InlineKeyboardButton("SUPPORT", callback_data="support")

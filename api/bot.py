@@ -29,6 +29,7 @@ def account(callback: CallbackQuery):
             bot.send_message(callback.message.chat.id, "You have no active subscription. Use /order to choose a subscription")
             return
         bot.send_message(callback.message.chat.id, f"Hello {callback.chat.username}.\nWhat do you want to do tody?", reply_markup=account_markup)
+        return
 
     if callback.data == "edit_message":
         edit_message(callback.message)
@@ -48,3 +49,4 @@ def echo_message(message: Message):
         bot.send_message(owner, f"Message from @{message.chat.username}\n\n{message.text}")
         return
     start(message)
+
