@@ -1,5 +1,5 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from .config import url
+from config import url
 
 def start_inline_markup(user_id):
     web_app = WebAppInfo(url=url+f"?user_id={user_id}")
