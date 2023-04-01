@@ -14,8 +14,7 @@ client = Sellix(os.getenv("API_KEY"))
 app = Flask(__name__, template_folder="./static", static_url_path='', 
             static_folder='./static')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://fsnnluat:t67qU_x6IxPN-EoKcFmhRCD54we9qz30@mahmud.db.elephantsql.com/fsnnluat'
-app.config['SECRET_KEY'] = '1f601a5ffe473ae4da49cd43ec646d3f'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

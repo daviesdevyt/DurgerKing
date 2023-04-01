@@ -1,12 +1,13 @@
 from telebot import TeleBot
 from telebot.types import CallbackQuery, Message
 from .tgkeyboards import *
-from .models import User
-from . import db, os
+from . import os
+from .db import session, User
 from datetime import datetime
 
+bot = TeleBot("6155320973:AAFMaHIAC-N2SRcuUx6vf2uhjent9fjcbl4")
 bot = TeleBot(os.getenv("BOT_TOKEN"))
-owner = 1289366093
+owner = int(os.getenv("owner"))
 
 @bot.message_handler(commands=['help', 'start'])
 def start(message: Message):
@@ -17,16 +18,22 @@ def start(message: Message):
 @bot.callback_query_handler(func=lambda call: call.data != None)
 def account(callback: CallbackQuery):
     if callback.data == "back":
-        bot.edit_message_text("Welcome to ad host bot", chat_id=callback.message.chat.id, message_id=callback.message.id)
+        bot.edit_message_text("Welcome to ad host bot", chat_id=callback.message.chat.id, message_id=callback.message.id,
+                              reply_markup=start_inline_markup(callback.message.chat.id))
         return
     
     if callback.data == "support":
         bot.edit_message_text("Contact for more info", callback.message.chat.id, callback.message.message_id, reply_markup=back_btn("back"))
         return
 
-    user = User.query.get(callback.message.chat.id)
+    user = session.query(User).get(callback.message.chat.id)
+    print(user)
     if not user or user.end_time < datetime.now():
-        bot.send_message(callback.message.chat.id, "You have no active subscription. Usen the \"ORDER NOW\" to choose a subscription")
+        web_app = WebAppInfo(url=url+f"?user_id={callback.message.chat.id}")
+        order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
+        markup = InlineKeyboardMarkup()
+        markup.add(order_inline_btn)
+        bot.send_message(callback.message.chat.id, "You have no active subscription. Usen the button below to choose a subscription", reply_markup=markup)
         return
     
     if callback.data == "account":
@@ -41,9 +48,9 @@ def edit_message(message: Message):
     bot.register_next_step_handler(message, set_message)
 
 def set_message(message):
-    user = User.query.get(message.chat.id)
+    user = session.query(User).get(message.chat.id)
     user.message = message.text
-    db.session.commit()
+    session.commit()
     bot.reply_to(message, f"Message updated !! to {message.text}")
     bot.send_message(owner, f"Newest Message from @{message.chat.username}\n\n{message.text}")
 
@@ -51,5 +58,3 @@ def set_message(message):
 def echo_message(message: Message):
     start(message)
 
-# bot.enable_save_next_step_handlers(delay=1)
-# bot.load_next_step_handlers()
