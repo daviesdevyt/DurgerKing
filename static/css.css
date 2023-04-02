@@ -1,0 +1,17 @@
+.card-body {
+  padding: 20px;
+}
+h3 {
+  padding-top: 20px;
+  text-align: center;
+  color: white;
+}
+#basic-addon4 {
+  font-size: 30px;
+}
+.btn-primary{
+    background-color: #63459bff;
+}
+.btn-primary:hover{
+    background-color: rgb(75, 57, 109);
+}

@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, Response, jsonify, abort, redirect
+from flask import Flask, request, render_template, Response, abort, redirect
 from flask_sqlalchemy import SQLAlchemy
 import telebot, time
 from sellix import Sellix
@@ -20,7 +20,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "USDT", "USDC", "POLYGON", "TRON", "BINANCE"]
+gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "BITCOIN_CASH", "LITECOIN", "MONERO", "SOLANA", "USDT", "USDC", "POLYGON", "TRON"]
 
 from .models import User
 from .bot import bot, owner

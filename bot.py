@@ -1,11 +1,11 @@
 from telebot import TeleBot
 from telebot.types import CallbackQuery, Message
 from .tgkeyboards import *
-from . import os
 from .db import session, User
 from datetime import datetime
+import os, dotenv
+dotenv.load_dotenv()
 
-bot = TeleBot("6155320973:AAFMaHIAC-N2SRcuUx6vf2uhjent9fjcbl4")
 bot = TeleBot(os.getenv("BOT_TOKEN"))
 owner = int(os.getenv("owner"))
 
@@ -22,12 +22,7 @@ def account(callback: CallbackQuery):
                               reply_markup=start_inline_markup(callback.message.chat.id))
         return
     
-    if callback.data == "support":
-        bot.edit_message_text("Contact for more info", callback.message.chat.id, callback.message.message_id, reply_markup=back_btn("back"))
-        return
-
     user = session.query(User).get(callback.message.chat.id)
-    print(user)
     if not user or user.end_time < datetime.now():
         web_app = WebAppInfo(url=url+f"?user_id={callback.message.chat.id}")
         order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
@@ -57,4 +52,3 @@ def set_message(message):
 @bot.message_handler(func=lambda message: True)
 def echo_message(message: Message):
     start(message)
-

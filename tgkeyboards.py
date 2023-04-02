@@ -5,7 +5,7 @@ def start_inline_markup(user_id):
     web_app = WebAppInfo(url=url+f"?user_id={user_id}")
     order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
     account_inline_btn = InlineKeyboardButton("ACCOUNT", callback_data="account")
-    support_inline_btn = InlineKeyboardButton("SUPPORT", callback_data="support")
+    support_inline_btn = InlineKeyboardButton("SUPPORT", url="https://t.me/adbothost3")
     start_markup = InlineKeyboardMarkup()
     start_markup.add(order_inline_btn)
     start_markup.row(account_inline_btn, support_inline_btn)

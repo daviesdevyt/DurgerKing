@@ -1,4 +1,4 @@
-prod_url = "https://julesfoundationschool.org"
+prod_url = "https://adbothost.com"
 test_url = "https://"
 url = prod_url
 packages = {
