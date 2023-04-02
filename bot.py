@@ -9,16 +9,17 @@ dotenv.load_dotenv()
 bot = TeleBot(os.getenv("BOT_TOKEN"))
 owner = int(os.getenv("owner"))
 
+start_message = "Let’s get started 🎉\n\nPlease tap the button below to subscribe!"
 @bot.message_handler(commands=['help', 'start'])
 def start(message: Message):
-    bot.reply_to(message, "Welcome to ad host bot",
+    bot.reply_to(message, start_message,
                  reply_markup=start_inline_markup(message.chat.id))
     bot.clear_step_handler(message)
 
 @bot.callback_query_handler(func=lambda call: call.data != None)
 def account(callback: CallbackQuery):
     if callback.data == "back":
-        bot.edit_message_text("Welcome to ad host bot", chat_id=callback.message.chat.id, message_id=callback.message.id,
+        bot.edit_message_text(start_message, chat_id=callback.message.chat.id, message_id=callback.message.id,
                               reply_markup=start_inline_markup(callback.message.chat.id))
         return
     
