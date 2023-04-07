@@ -51,6 +51,7 @@ $(".order").click(e => {
     email = $(".email-input").val() != "" ? $(".email-input").val() : null
     if (!(plan && timing && email && tgid != "")) return
     $(".order").prop("disabled", true)
+    $(".order").html("Loading ...")
     sendOrderRequest()
 })
 paymentMethodInput = document.querySelector(".payment-method")
@@ -66,17 +67,25 @@ function sendOrderRequest() {
         },
         body: JSON.stringify({ package: plan, timing, email, tgid, gateway: paymentMethod })
     })
-        .then(response => response.json())
         .then(response => {
-            if (response.startsWith("https://checkout.sellix.io/")){
+            if (!response.ok) throw new Error()
+            return response.json()
+        })
+        .then(response => {
+            if (response.startsWith("https://checkout.sellix.io/")) {
                 window.location.href = response
                 return
             }
             alertUpdate(response, "danger")
+            throw new Error()
+        })
+        .catch(err => {
+            $(".order").prop("disabled", false)
+            $(".order").html("Purchase")
         })
 }
 
 alertDiv = $("[alert]")
-function alertUpdate(text, category){
+function alertUpdate(text, category) {
     alertDiv.html(`<div class="alert alert-${category}" role="alert">${text}</div>`)
 }

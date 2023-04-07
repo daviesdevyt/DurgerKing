@@ -29,7 +29,7 @@ def account(callback: CallbackQuery):
         order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
         markup = InlineKeyboardMarkup()
         markup.add(order_inline_btn)
-        bot.send_message(callback.message.chat.id, "You have no active subscription. Usen the button below to choose a subscription", reply_markup=markup)
+        bot.send_message(callback.message.chat.id, "You have no active subscription. Use the button below to choose a subscription", reply_markup=markup)
         return
     
     if callback.data == "account":
