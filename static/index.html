@@ -1,60 +1,204 @@
 <!DOCTYPE html>
-<html class="dark" style="--tg-viewport-height: 100vh; --tg-viewport-stable-height: 100vh">
+<html lang="en">
   <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8" />
-    <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="MobileOptimized" content="176" />
-    <meta name="HandheldFriendly" content="True" />
-    <meta name="robots" content="noindex, nofollow" />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script defer src="/js.js"></script>
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="keywords" content="Bootstrap, Landing page, Template, Business, Service" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="author" content="Grayrids" />
+    <title>Get Ad bot</title>
+    <!--====== Favicon Icon ======-->
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <script
+      defer
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var tgid = "{{tgid}}"
+      var paymentMethod = "{{gateways[0]}}"
+    </script>
+    <style>
+      #pricing .pricing-table {
+        padding: 20px;
+      }
+      .section {
+        padding: 50px;
+      }
+      .section-header {
+        margin-bottom: 20px;
+      }
+      .select-btn {
+        background-color: #261d38;
+        border: none;
+        color: white;
+      }
+      .select-btn:focus {
+        background-color: #261d38;
+        border: none;
+        color: white;
+      }
+      .price {
+        color: #ece2ff;
+      }
+      .modal-content {
+        margin: 0px 20px;
+        background-color: #1d162a;
+      }
+      hr {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        border: 0.04rem solid rgb(216, 216, 216);
+      }
+    </style>
+    <script defer src="js.js"></script>
   </head>
-  <body data-bs-theme="dark">
-    <h3>Purchase subscription</h3>
-    <div class="card-body">
-      <form action="/make-order" method="post">
-        <div class="row py-2">
-          <div class="col">
-            <label for="floatingSelect">Frequency</label>            
-            <select class="form-select" id="floatingSelect" aria-label="Floating label select example" name="timing" required>
-              <option value="w" selected>-- SELECT AN OPTION --</option>
-              <option value="w">Weekly</option>
-              <option value="m">Monthly</option>
-            </select>
-          </div>
-          <div class="col">
-            <label for="floatingSelect">Number of groups</label>
-            <select class="form-select" id="floatingSelect" aria-label="Floating label select example" name="package" required>
-              <option value="w" selected>-- SELECT AN OPTION --</option>
-              <option value="250">250</option>
-              <option value="1000">1000</option>
-              <option value="1500">1500</option>
-              <option value="2500">2500</option>
-              <option value="5000">5000</option>
-            </select>
+  <body>
+    <!-- Our Pricing Plan Section Start -->
+    <section id="pricing" class="section">
+      <div class="container">
+        <!-- Start Row -->
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="pricing-text section-header text-center">
+              <div>
+                <h2 class="section-title">SELECT PLAN</h2>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <input type="text" name="tgid" value="{{tgid}}" hidden required>
+        <div class="row">
+          <div class="col-lg-6 col-md-12">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="time">Frequency</label>
+                <select name="timing" id="time" class="form-control select-btn">
+                  <option value="w">Weekly</option>
+                  <option value="m">Monthly</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-12 py-2">
-          <label for="inputAddress" class="form-label">Email</label>
-          <input type="email" class="form-control" name="email" id="inputAddress" placeholder="name@example.com" required>
+        <div class="row pricing-tables">
+          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
+            <div class="pricing-table text-center">
+              <div class="pricing-details">
+                <h3>250 Groups</h3>
+                <h2 class="price price1"><span>$</span>0</h2>
+              </div>
+              <div class="plan-button">
+                <button data-toggle="modal" purchase="250" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="form-text py-2 d-flex justify-content-center" id="basic-addon4">
-          <h4>Total: $<price>0</price></h4>
+        <div class="row pricing-tables">
+          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
+            <div class="pricing-table text-center">
+              <div class="pricing-details">
+                <h3>1000 Groups</h3>
+                <h2 class="price price2"><span>$</span>0</h2>
+              </div>
+              <div class="plan-button">
+                <button data-toggle="modal" purchase="1000" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-12 d-flex justify-content-center">
-          <button type="submit" class="btn btn-primary px-4">Purchase</button>
+        <div class="row pricing-tables">
+          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
+            <div class="pricing-table text-center">
+              <div class="pricing-details">
+                <h3>1500 Groups</h3>
+                <h2 class="price price3"><span>$</span>0</h2>
+              </div>
+              <div class="plan-button">
+                <button data-toggle="modal" purchase="1500" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
+        <div class="row pricing-tables">
+          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
+            <div class="pricing-table text-center">
+              <div class="pricing-details">
+                <h3>2500 Groups</h3>
+                <h2 class="price price4"><span>$</span>0</h2>
+              </div>
+              <div class="plan-button">
+                <button data-toggle="modal" purchase="2500" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row pricing-tables">
+          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
+            <div class="pricing-table text-center">
+              <div class="pricing-details">
+                <h3>5000 Groups</h3>
+                <h2 class="price price5"><span>$</span>0</h2>
+              </div>
+              <div class="plan-button">
+                <button data-toggle="modal" purchase="5000" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal fade" id="checkout" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <form>
+            <div class="modal-body">
+              <span>Service: <span service></span></span>
+              <hr />
+              <span>Total: $<span total-price></span></span>
+              <hr />
+              <div alert></div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="Enter Email" class="form-control select-btn email-input" required />
+              </div>
+              <div class="form-group mb-0">
+                <label for="crypto">Payment Method</label>
+                <select name="crypto" id="crypto" class="form-control select-btn payment-method">
+                  {% for item in gateways %}
+                  <option value="{{item}}">{{item|title}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center py-3">
+              <button type="submit" class="btn btn-primary order" style="background-color: rgb(0, 175, 9)">Purchase</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
   </body>
 </html>

@@ -6,10 +6,10 @@ from datetime import datetime
 import os, dotenv
 dotenv.load_dotenv()
 
-bot = TeleBot(os.getenv("BOT_TOKEN"))
+bot = TeleBot(os.getenv("BOT_TOKEN"), parse_mode="HTML")
 owner = int(os.getenv("owner"))
 
-start_message = "Let’s get started 🎉\n\nPlease tap the button below to subscribe!"
+start_message = "<b>Let’s get started</b> 🎉\n\nPlease tap the button below to subscribe!"
 @bot.message_handler(commands=['help', 'start'])
 def start(message: Message):
     bot.reply_to(message, start_message,

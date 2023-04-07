@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, Response, abort, redirect
+from flask import Flask, request, render_template, Response, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import telebot, time
 from sellix import Sellix
@@ -41,7 +41,7 @@ def home():
     user_id = request.args.get("user_id")
     if not user_id:
         return Response(f"Could not access this page. Got to @{bot.get_me().username} on telegram")
-    return render_template("index.html", tgid=user_id)
+    return render_template("index.html", tgid=user_id, gateways=gateways)
 
 @app.route("/telegram", methods=["POST"])
 def telegram_bot():
@@ -55,20 +55,25 @@ def telegram_bot():
 
 @app.route("/make-order", methods=["POST"])
 def pay():
+    request_data = request.get_json()
     try:
-        email = request.form["email"]
-        telegram_id = request.form["tgid"]
+        email = request_data["email"]
+        telegram_id = request_data["tgid"]
         if email == "":
-            return Response("Your email is required")
-        package = request.form["package"]
-        timing = request.form['timing']
+            return jsonify("Your email is required")
+        package = request_data["package"]
+        timing = request_data['timing']
+        gateway = request_data.get('gateway')
+        _gateways = gateways.copy()
+        if gateway:
+            _gateways = None
         cost = packages[package][timing]
     except Exception as e:
-        return Response(f"Invalid request: {e}")
+        return jsonify(f"A error occured. Please refresh if the problem persists")
     res = client.create_payment(title="Your Order", value=cost, currency="USD", email=email,
-                                white_label=False, gateways=gateways, return_url=request.referrer+"success",
+                                white_label=False, gateway=gateway, gateways=_gateways, return_url=request.referrer+"success",
                                 custom_fields={"tgid":telegram_id, "p":package, "t":timing}, webhook_url=request.referrer+"success")
-    return redirect(res["url"])
+    return jsonify(res["url"])
 
 @app.route("/success", methods=["GET", "POST"])
 def customer_paid():
