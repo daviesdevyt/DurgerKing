@@ -1,5 +1,5 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from .config import url
+from .config import url, owner
 
 def start_inline_markup(user_id):
     web_app = WebAppInfo(url=url+f"?user_id={user_id}")
@@ -25,3 +25,15 @@ def back_btn(step: str):
     btn = InlineKeyboardButton("back", callback_data=step)
     markup.add(btn)
     return markup
+
+class Admin:
+    kb = InlineKeyboardMarkup()
+    get_all = InlineKeyboardButton("See all subscriptions", callback_data="admin_get_all")
+    new_sub_form = InlineKeyboardButton("Add subscriber", web_app=WebAppInfo(url+"/add-sub?user_id="+str(owner)))    
+    back_btn = InlineKeyboardButton("Back", callback_data="admin_back")
+    kb.add(get_all)
+    kb.add(new_sub_form)
+
+    @classmethod
+    def get_kb(cls):
+        return cls.kb

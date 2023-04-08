@@ -1,6 +1,11 @@
+import os, dotenv
+dotenv.load_dotenv()
+
 prod_url = "https://adbothost.com"
 test_url = "https://"
 url = prod_url
+owner = int(os.getenv("owner"))
+bot_token = os.getenv("BOT_TOKEN")
 packages = {
     "250": {
         "w": "30",

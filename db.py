@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
@@ -9,8 +9,8 @@ base = declarative_base()
 
 class User(base):
     __tablename__ = "user"
-    uid = Column(Integer, primary_key=True)
-    message = Column(Text)
+    id = Column(BigInteger, primary_key=True)
+    message = Column(Text, nullable=True)
     package = Column(String(8))
     start_time = Column(DateTime, default=func.now())
     end_time = Column(DateTime)

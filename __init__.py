@@ -82,16 +82,44 @@ def customer_paid():
         package = request.form["custom_fields"]["p"]
         timing = request.form["custom_fields"]["t"]
         duration = 7 if timing == "w" else 30
-        end_time = datetime.now()+timedelta(duration)
+        stime = datetime.now()
+        etime = stime+timedelta(duration)
         user = User.query.get(int(telegram_id))
         if not user:
-            user = User(uid=int(telegram_id), package=package, end_time=end_time)
+            user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
             db.session.add(user)
         else:
             user.package = package
-            user.start_time = datetime.now()
-            user.end_time = end_time
+            user.start_time = stime
+            user.end_time = etime
         db.session.commit()
         bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
         bot.send_message(owner, f"Just got an order from telegram user @{telegram_id}. His message is on its way")
     return Response("<h3>Payment successful. You can go back to the telegram now</h3>")
+
+@app.route("/add-sub", methods=["GET", "POST"])
+def add_sub():
+    messages = []
+    if request.method == "POST":
+        try:
+            tgid = request.form["tgid"]
+            if int(tgid) != owner:
+                raise Exception()
+            user_id = request.form["user_id"]
+            package = request.form["package"]
+            date = request.form["date"]
+            time = request.form.get("stime")
+            if not time: time = "00:00"
+            frequency = request.form["freq"]
+            duration = 7 if frequency == "w" else 30
+            stime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
+            etime = stime+timedelta(duration)
+            bot.get_chat(user_id)
+            user = User(id=user_id, package=package, start_time=stime, end_time=etime)
+            db.session.add(user)
+            db.session.commit()
+            messages.append(("User added successfully", "success"),)
+        except:
+            messages.append(("An error occured", "danger"),)
+        return render_template("add-sub.html", user_id=tgid, packages=packages, flash=messages)
+    return render_template("add-sub.html", user_id=request.args.get("user_id"), packages=packages, flash=messages)
