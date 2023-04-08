@@ -94,7 +94,7 @@ def customer_paid():
             user.end_time = etime
         db.session.commit()
         bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
-        bot.send_message(owner, f"Just got an order from telegram user @{telegram_id}. His message is on its way")
+        bot.send_message(owner, f"Just got an order from telegram user @{bot.get_chat(telegram_id).username}. His message is on its way")
     return Response("<h3>Payment successful. You can go back to the telegram now</h3>")
 
 @app.route("/add-sub", methods=["GET", "POST"])

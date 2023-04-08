@@ -42,9 +42,9 @@ def account(callback: CallbackQuery):
             msg = "\n".join(map(generate, all_users))
             if msg == "":
                 msg = "No users found"
-            bot.register_next_step_handler(message, get_subscriber_data)
             bot.edit_message_text("To see details about any of them, Just click on their ids\n\n"+msg,
                                   message.chat.id, message.id, parse_mode="markdown", reply_markup=Admin.get_kb())
+            bot.register_next_step_handler(message, get_subscriber_data)
         elif data == "back":
             bot.edit_message_text("<b>Welcome back Admin!!</b>\nWhat will you like to do today?",
                                   message.chat.id, message.id, reply_markup=Admin.get_kb())
@@ -62,8 +62,8 @@ def account(callback: CallbackQuery):
 
     if data == "account":
         bot.clear_step_handler(message)
-        bot.send_message(
-            message.chat.id, f"Hello {message.chat.username}.\nWhat do you want to do today?", reply_markup=account_markup)
+        bot.edit_message_text(f"Hello <b>{message.chat.username}</b>.\nWhat do you want to do today?",
+                              message.chat.id, message.id, reply_markup=account_markup)
 
     if data == "edit_message":
         bot.send_message(
@@ -87,16 +87,16 @@ def get_subscriber_data(message: Message):
         bot.reply_to(message, f"User \"{uid}\" doesnt exist")
         bot.clear_step_handler(message)
         return
-    end = user.end_time
+    end = user.end_time.strftime("%I:%M %p %d %b, %Y")
     bot.send_message(message.chat.id, f"User ID: {uid}\nUsername: {bot.get_chat(uid).username}\n"
-                     f"\nPackage paid: {user.package}\nExpiring: {end.hour:02}:{end.minute:02} {end.day:02}, {end.month:02} {end.year}"
+                     f"\nPackage: {user.package} Groups\nExpiring: {end}"
                      f"\nMessage: `{user.message}`", parse_mode="markdown", reply_markup=Admin.get_kb())
     bot.register_next_step_handler(message, get_subscriber_data)
 
 
 def generate(user: User):
-    end = user.end_time
-    return f"/{user.id} - Expiring {end.hour:02}:{end.minute:02} {end.day:02}, {end.month:02} {end.year}"
+    end = user.end_time.strftime("%I:%M %p %d %b")
+    return f"/{user.id} - Expiring {end}"
 
 
 def set_message(message: Message):
