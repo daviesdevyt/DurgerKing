@@ -1,33 +1,25 @@
-packages = {
-    "250": {
-        "w": "30",
-        "m": "80"
-    },
-    "1000": {
-        "w": "60",
-        "m": "150"
-    },
-    "1500": {
-        "w": "80",
-        "m": "200"
-    },
-    "2500": {
-        "w": "120",
-        "m": "300"
-    },
-    "5000": {
-        "w": "180",
-        "m": "500"
-    }
-}
 var timing = null
 var plan = null
 var email = null
 
-var selectBtn = document.querySelector("select")
-selectBtn.addEventListener("change", choose)
-$("[purchase]").click(e => {
-    plan = e.target.getAttribute("purchase")
+btnFrequency = $("[btn-frequency]")
+
+btnFrequency.click(e => {
+    current = btnFrequency.data("freq")
+    if (current == "w") {
+        btnFrequency.data("freq", "m")
+        btnFrequency.html("Monthly")
+    }
+    else if (current == "m") {
+        btnFrequency.data("freq", "w")
+        btnFrequency.html("Weekly")
+    }
+    choose()
+})
+
+$("#pricing .pricing-tables").click(e => {
+    let plan = e.currentTarget.getAttribute("purchase")
+    console.log(plan)
     let t = undefined
     if (timing == "w") {
         t = "Weekly"
@@ -37,11 +29,12 @@ $("[purchase]").click(e => {
     $("[service]").html(t + " - " + plan + " Groups")
     $("[total-price]").html(packages[plan][timing])
 })
+
+var obj_keys = Object.keys(packages)
 function choose() {
-    timing = selectBtn.value
-    var obj_keys = Object.keys(packages)
+    timing = btnFrequency.data("freq")
     for (let i = 0; i < obj_keys.length; i++) {
-        let price = document.querySelector(".price" + (i + 1))
+        let price = document.querySelector(".price" + i)
         price.innerHTML = "$" + packages[obj_keys[i]][timing]
     }
 }

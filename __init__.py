@@ -41,7 +41,7 @@ def home():
     user_id = request.args.get("user_id")
     if not user_id:
         return Response(f"Could not access this page. Got to @{bot.get_me().username} on telegram")
-    return render_template("index.html", tgid=user_id, gateways=gateways)
+    return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=gateways)
 
 @app.route("/telegram", methods=["POST"])
 def telegram_bot():

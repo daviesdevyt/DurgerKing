@@ -1,0 +1,31 @@
+#pricing .pricing-table {
+  padding: 20px;
+}
+.section {
+  padding: 50px;
+}
+.section-header {
+  margin-bottom: 20px;
+}
+.select-btn {
+  background-color: #261d38;
+  border: none;
+  color: white;
+}
+.select-btn:focus {
+  background-color: #261d38;
+  border: none;
+  color: white;
+}
+.price {
+  color: #ece2ff;
+}
+.modal-content {
+  margin: 0px 20px;
+  background-color: #1d162a;
+}
+hr {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border: 0.04rem solid rgb(216, 216, 216);
+}

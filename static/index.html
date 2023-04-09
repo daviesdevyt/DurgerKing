@@ -39,40 +39,9 @@
     <script>
       var tgid = "{{tgid}}"
       var paymentMethod = "{{gateways[0]}}"
+      var packages = {{packages_details|tojson}}
     </script>
-    <style>
-      #pricing .pricing-table {
-        padding: 20px;
-      }
-      .section {
-        padding: 50px;
-      }
-      .section-header {
-        margin-bottom: 20px;
-      }
-      .select-btn {
-        background-color: #261d38;
-        border: none;
-        color: white;
-      }
-      .select-btn:focus {
-        background-color: #261d38;
-        border: none;
-        color: white;
-      }
-      .price {
-        color: #ece2ff;
-      }
-      .modal-content {
-        margin: 0px 20px;
-        background-color: #1d162a;
-      }
-      hr {
-        margin-top: 0;
-        margin-bottom: 1rem;
-        border: 0.04rem solid rgb(216, 216, 216);
-      }
-    </style>
+    <link rel="stylesheet" href="css/css.css">
     <script defer src="js.js"></script>
   </head>
   <body>
@@ -90,86 +59,25 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-lg-6 col-md-12">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="time">Frequency</label>
-                <select name="timing" id="time" class="form-control select-btn">
-                  <option value="w">Weekly</option>
-                  <option value="m">Monthly</option>
-                </select>
-              </div>
-            </div>
+          <div class="col-lg-6 col-md-12 d-flex justify-content-center py-3">
+            <button class="btn btn-common btn-border" btn-frequency data-freq="m">Monthly</button>
           </div>
         </div>
-        <div class="row pricing-tables">
+        {% for (i, pkg) in packages %}
+        <div class="row pricing-tables" data-toggle="modal" purchase="{{pkg}}" data-target="#checkout">
           <div class="col-lg-4 col-md-4 col-xs-12 no-m">
             <div class="pricing-table text-center">
               <div class="pricing-details">
-                <h3>250 Groups</h3>
-                <h2 class="price price1"><span>$</span>0</h2>
-              </div>
-              <div class="plan-button">
-                <button data-toggle="modal" purchase="250" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
+                <h3>{{pkg}} Groups</h3>
+                <h2 class="price price{{i}}"><span>$</span>0</h2>
+                <small>Advertise your post on {{pkg}} groups</small>
               </div>
             </div>
           </div>
         </div>
-        <div class="row pricing-tables">
-          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>1000 Groups</h3>
-                <h2 class="price price2"><span>$</span>0</h2>
-              </div>
-              <div class="plan-button">
-                <button data-toggle="modal" purchase="1000" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row pricing-tables">
-          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>1500 Groups</h3>
-                <h2 class="price price3"><span>$</span>0</h2>
-              </div>
-              <div class="plan-button">
-                <button data-toggle="modal" purchase="1500" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row pricing-tables">
-          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>2500 Groups</h3>
-                <h2 class="price price4"><span>$</span>0</h2>
-              </div>
-              <div class="plan-button">
-                <button data-toggle="modal" purchase="2500" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row pricing-tables">
-          <div class="col-lg-4 col-md-4 col-xs-12 no-m">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>5000 Groups</h3>
-                <h2 class="price price5"><span>$</span>0</h2>
-              </div>
-              <div class="plan-button">
-                <button data-toggle="modal" purchase="5000" data-target="#checkout" class="btn btn-common btn-border">Purchase</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        {% endfor %}
       </div>
     </section>
-
     <div class="modal fade" id="checkout" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
