@@ -35,7 +35,7 @@ def account(callback: CallbackQuery):
                               reply_markup=start_inline_markup(message.chat.id))
         return
 
-    if data.startswith("admin_") and message.chat.id == owner:
+    elif data.startswith("admin_") and message.chat.id == owner:
         data = data.strip("admin_")
         if data == "get_all":
             all_users = session.query(User).all()
@@ -65,7 +65,12 @@ def account(callback: CallbackQuery):
         bot.edit_message_text(f"Hello <b>{message.chat.username}</b>.\nWhat do you want to do today?",
                               message.chat.id, message.id, reply_markup=account_markup)
 
-    if data == "edit_message":
+    elif data == "manage_sub":
+        end = user.end_time.strftime("%I:%M %p %d %b, %Y")
+        bot.edit_message_text(f"User ID: {message.chat.id}\nUsername: {message.chat.username}\n"
+                              f"\nPackage: {user.package} Groups\nExpiring: {end}", message.chat.id, message.id, parse_mode="markdown", reply_markup=account_markup)
+
+    elif data == "edit_message":
         bot.send_message(
             message.chat.id, f"Current: `{user.message}`\n\nSend the new message you want to set", parse_mode="markdown")
         bot.register_next_step_handler(message, set_message)
@@ -103,9 +108,10 @@ def set_message(message: Message):
     user = session.query(User).get(message.chat.id)
     user.message = message.text
     session.commit()
-    bot.reply_to(message, f"Message updated !! to {message.text}")
+    bot.reply_to(message, f"Message updated to\n**`{message.text}`**\n\nYour changes will be viable within 24 hours",
+                 parse_mode="markdown", reply_markup=account_markup)
     bot.send_message(
-        owner, f"Newest Message from @{message.chat.username}\n\n{message.text}")
+        owner, f"Newest Message from @{message.chat.username}\n\n**`{message.text}`**", parse_mode="markdown")
 
 
 @bot.message_handler(func=lambda message: True)

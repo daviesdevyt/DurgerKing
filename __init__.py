@@ -84,15 +84,7 @@ def customer_paid():
         duration = 7 if timing == "w" else 30
         stime = datetime.now()
         etime = stime+timedelta(duration)
-        user = User.query.get(int(telegram_id))
-        if not user:
-            user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
-            db.session.add(user)
-        else:
-            user.package = package
-            user.start_time = stime
-            user.end_time = etime
-        db.session.commit()
+        add_or_update_user(telegram_id, package, stime, etime)
         bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
         bot.send_message(owner, f"Just got an order from telegram user @{bot.get_chat(telegram_id).username}. His message is on its way")
     return Response("<h3>Payment successful. You can go back to the telegram now</h3>")
@@ -115,11 +107,20 @@ def add_sub():
             stime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
             etime = stime+timedelta(duration)
             bot.get_chat(user_id)
-            user = User(id=user_id, package=package, start_time=stime, end_time=etime)
-            db.session.add(user)
-            db.session.commit()
+            add_or_update_user(user_id, package, stime, etime)
             messages.append(("User added successfully", "success"),)
         except:
             messages.append(("An error occured", "danger"),)
         return render_template("add-sub.html", user_id=tgid, packages=packages, flash=messages)
     return render_template("add-sub.html", user_id=request.args.get("user_id"), packages=packages, flash=messages)
+
+def add_or_update_user(telegram_id, package, stime, etime):
+    user = User.query.get(int(telegram_id))
+    if not user:
+        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
+        db.session.add(user)
+    else:
+        user.package = package
+        user.start_time = stime
+        user.end_time = etime
+    db.session.commit()
