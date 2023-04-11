@@ -21,6 +21,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "BITCOIN_CASH", "LITECOIN", "MONERO", "SOLANA", "USDT", "USDC", "POLYGON", "TRON"]
+tags = ["eth", "bnb", "btc", "bch", "ltc", "xmr", "sol", "usdt", "usdc", "matic", "trx"]
 
 from .models import User
 from .bot import bot, owner
@@ -41,7 +42,7 @@ def home():
     user_id = request.args.get("user_id")
     if not user_id:
         return Response(f"Could not access this page. Got to @{bot.get_me().username} on telegram")
-    return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=gateways)
+    return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=enumerate(gateways), tags=tags)
 
 @app.route("/telegram", methods=["POST"])
 def telegram_bot():

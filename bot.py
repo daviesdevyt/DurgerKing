@@ -105,13 +105,15 @@ def generate(user: User):
 
 
 def set_message(message: Message):
-    user = session.query(User).get(message.chat.id)
-    user.message = message.text
-    session.commit()
-    bot.reply_to(message, f"Message updated to\n**`{message.text}`**\n\nYour changes will be viable within 24 hours",
+    if message.text:
+        user = session.query(User).get(message.chat.id)
+        user.message = message.text
+        session.commit()
+    bot.reply_to(message, f"Message updated\n\nYour changes will be viable within 24 hours",
                  parse_mode="markdown", reply_markup=account_markup)
     bot.send_message(
-        owner, f"Newest Message from @{message.chat.username}\n\n**`{message.text}`**", parse_mode="markdown")
+        owner, f"Newest Message from @{message.chat.username}", parse_mode="markdown")
+    bot.forward_message(owner, message.chat.id, message.id)
 
 
 @bot.message_handler(func=lambda message: True)

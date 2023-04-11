@@ -1,6 +1,7 @@
 var timing = null
 var plan = null
 var email = null
+var paymentMethod
 
 btnFrequency = $("[btn-frequency]")
 
@@ -17,9 +18,8 @@ btnFrequency.click(e => {
     choose()
 })
 
-$("#pricing .pricing-tables").click(e => {
-    let plan = e.currentTarget.getAttribute("purchase")
-    console.log(plan)
+$("[purchase]").click(e => {
+    plan = e.target.getAttribute("purchase")
     let t = undefined
     if (timing == "w") {
         t = "Weekly"
@@ -39,18 +39,16 @@ function choose() {
     }
 }
 choose()
-$(".order").click(e => {
-    e.preventDefault();
+$(".order").click(orderClicked)
+
+function orderClicked(e) {
+    paymentMethod = e.target.getAttribute("value")
     email = $(".email-input").val() != "" ? $(".email-input").val() : null
     if (!(plan && timing && email && tgid != "")) return
-    $(".order").prop("disabled", true)
-    $(".order").html("Loading ...")
+    $(".order").unbind("click")
+    $("[c-selection]").addClass("select-disabled")
     sendOrderRequest()
-})
-paymentMethodInput = document.querySelector(".payment-method")
-$(".payment-method").change(e => {
-    paymentMethod = paymentMethodInput.value
-})
+}
 
 function sendOrderRequest() {
     fetch('/make-order', {
@@ -73,8 +71,8 @@ function sendOrderRequest() {
             throw new Error()
         })
         .catch(err => {
-            $(".order").prop("disabled", false)
-            $(".order").html("Purchase")
+            $(".order").click(orderClicked)
+            $("[c-selection]").removeClass("select-disabled");
         })
 }
 
