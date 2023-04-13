@@ -24,6 +24,12 @@ def admin(message: Message):
         message.chat.id, "<b>Welcome back Admin!!</b>\nWhat will you like to do today?", reply_markup=Admin.get_kb())
 
 
+@bot.message_handler(commands=["cancel"])
+def cancel(message: Message):
+    bot.clear_step_handler(message)
+    bot.send_message(message.chat.id, "Operation cancelled")
+
+
 @bot.callback_query_handler(func=lambda call: call.data != None)
 def account(callback: CallbackQuery):
     message = callback.message
@@ -45,6 +51,10 @@ def account(callback: CallbackQuery):
             bot.edit_message_text("To see details about any of them, Just click on their ids\n\n"+msg,
                                   message.chat.id, message.id, parse_mode="markdown", reply_markup=Admin.get_kb())
             bot.register_next_step_handler(message, get_subscriber_data)
+        elif data.startswith("getmsg_"):
+            data = data.strip("getmsg_")
+            msg_id, chat_id = data.split(":")
+            bot.forward_message(owner, chat_id, msg_id)
         elif data == "back":
             bot.edit_message_text("<b>Welcome back Admin!!</b>\nWhat will you like to do today?",
                                   message.chat.id, message.id, reply_markup=Admin.get_kb())
@@ -71,8 +81,12 @@ def account(callback: CallbackQuery):
                               f"\nPackage: {user.package} Groups\nExpiring: {end}", message.chat.id, message.id, parse_mode="markdown", reply_markup=account_markup)
 
     elif data == "edit_message":
+        user_message = user.message
+        if user_message or user_message == "":
+            msg_id, chat_id = user_message.split(":")
+            bot.forward_message(message.chat.id, chat_id, msg_id)
         bot.send_message(
-            message.chat.id, f"Current: `{user.message}`\n\nSend the new message you want to set", parse_mode="markdown")
+            message.chat.id, f"{'That is your current message ☝️' if user_message else 'You have no current message set'}\n\nSend the new message you want to set\n\nUse /cancel to leave it unchanged", parse_mode="markdown")
         bot.register_next_step_handler(message, set_message)
 
 
@@ -83,8 +97,10 @@ def get_subscriber_data(message: Message):
         if not user:
             raise Exception()
     except ValueError:
-        if uid == 'start':
-            start(message)
+        funcs = {"start": start, "cancel": cancel}
+        f = funcs.get(uid)
+        if f:
+            f(message)
             return
         admin(message)
         return
@@ -92,10 +108,12 @@ def get_subscriber_data(message: Message):
         bot.reply_to(message, f"User \"{uid}\" doesnt exist")
         bot.clear_step_handler(message)
         return
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton("Get message",
+           callback_data=f"admin_getmsg_{user.message}"))
     end = user.end_time.strftime("%I:%M %p %d %b, %Y")
     bot.send_message(message.chat.id, f"User ID: {uid}\nUsername: {bot.get_chat(uid).username}\n"
-                     f"\nPackage: {user.package} Groups\nExpiring: {end}"
-                     f"\nMessage: `{user.message}`", parse_mode="markdown", reply_markup=Admin.get_kb())
+                     f"\nPackage: {user.package} Groups\nExpiring: {end}", parse_mode="markdown", reply_markup=kb)
     bot.register_next_step_handler(message, get_subscriber_data)
 
 
@@ -105,15 +123,18 @@ def generate(user: User):
 
 
 def set_message(message: Message):
-    if message.text:
-        user = session.query(User).get(message.chat.id)
-        user.message = message.text
-        session.commit()
+    if message.text == "/cancel":
+        cancel(message)
+        return
+    user = session.query(User).get(message.chat.id)
+    msg_id, chat_id = message.id, message.chat.id
+    user.message = f"{msg_id}:{chat_id}"
+    session.commit()
     bot.reply_to(message, f"Message updated\n\nYour changes will be viable within 24 hours",
                  parse_mode="markdown", reply_markup=account_markup)
     bot.send_message(
         owner, f"Newest Message from @{message.chat.username}", parse_mode="markdown")
-    bot.forward_message(owner, message.chat.id, message.id)
+    bot.forward_message(owner, chat_id, msg_id)
 
 
 @bot.message_handler(func=lambda message: True)
