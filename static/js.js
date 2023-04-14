@@ -39,14 +39,24 @@ function choose() {
     }
 }
 choose()
+$(".currency").click(selectCurrency)
+function selectCurrency(e){
+    if (paymentMethod) {
+        let div = document.querySelector(`[value="${paymentMethod}"]`)
+        div.classList.remove("border", "border-primary")
+    }
+    paymentMethod = e.target.getAttribute("value")
+    $("currency").html(paymentMethod)
+    e.target.classList.add("border","border-primary")
+}
+
 $(".order").click(orderClicked)
 
 function orderClicked(e) {
-    paymentMethod = e.target.getAttribute("value")
     email = $(".email-input").val() != "" ? $(".email-input").val() : null
-    if (!(plan && timing && email && tgid != "")) return
-    $(".order").unbind("click")
-    $("[c-selection]").addClass("select-disabled")
+    if (!(plan && timing && email && tgid != "" && paymentMethod)) return
+    $(".order").prop("disabled", true)
+    $(".order").html("Loading ...")
     sendOrderRequest()
 }
 
@@ -71,8 +81,8 @@ function sendOrderRequest() {
             throw new Error()
         })
         .catch(err => {
-            $(".order").click(orderClicked)
-            $("[c-selection]").removeClass("select-disabled");
+            $(".order").prop("disabled", false)
+            $(".order").html("Purchase")
         })
 }
 
