@@ -53,6 +53,7 @@ function selectCurrency(e){
 $(".order").click(orderClicked)
 
 function orderClicked(e) {
+    e.preventDefault();
     email = $(".email-input").val() != "" ? $(".email-input").val() : null
     if (!(plan && timing && email && tgid != "" && paymentMethod)) return
     $(".order").prop("disabled", true)

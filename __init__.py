@@ -29,19 +29,17 @@ WEBHOOK_URL = url+"/telegram"
 
 @app.route("/set")
 def set_wh():
-    try:
-        bot.remove_webhook()
-        time.sleep(0.5)
-        bot.set_webhook(url=WEBHOOK_URL)
-        return ""
-    except Exception as e:
-        return "Invalid "+str(e)
+    bot.remove_webhook()
+    time.sleep(0.5)
+    bot.set_webhook(url=WEBHOOK_URL)
+    return ""
 
 @app.route("/")
 def home():
     user_id = request.args.get("user_id")
     if not user_id:
-        return Response(f"Could not access this page. Got to @{bot.get_me().username} on telegram")
+        uname = bot.get_me().username
+        return Response(f"Could not access this page. Got to <a href='t.me/{uname}'>@{uname}</a>")
     return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=enumerate(gateways), tags=tags)
 
 @app.route("/telegram", methods=["POST"])
@@ -72,23 +70,33 @@ def pay():
     except Exception as e:
         return jsonify(f"A error occured. Please refresh if the problem persists")
     res = client.create_payment(title="Your Order", value=cost, currency="USD", email=email,
-                                white_label=False, gateway=gateway, gateways=_gateways, return_url=request.referrer+"success",
-                                custom_fields={"tgid":telegram_id, "p":package, "t":timing}, webhook_url=request.referrer+"success")
+                                white_label=False, gateway=gateway, gateways=_gateways, return_url=url+"/success",
+                                custom_fields={"tgid":telegram_id, "p":package, "t":timing}, webhook=url+"/paid")
     return jsonify(res["url"])
 
-@app.route("/success", methods=["GET", "POST"])
-def customer_paid():
-    if request.method == "POST":
-        telegram_id = request.form["custom_fields"]["tgid"]
-        package = request.form["custom_fields"]["p"]
-        timing = request.form["custom_fields"]["t"]
-        duration = 7 if timing == "w" else 30
-        stime = datetime.now()
-        etime = stime+timedelta(duration)
-        add_or_update_user(telegram_id, package, stime, etime)
-        bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
-        bot.send_message(owner, f"Just got an order from telegram user @{bot.get_chat(telegram_id).username}. His message is on its way")
+@app.route("/success", methods=["GET"])
+def customer_paid_page():
     return Response("<h3>Payment successful. You can go back to the telegram now</h3>")
+
+@app.route("/paid", methods=["POST"])
+def customer_paid_webhook():
+    request_res = request.get_json(silent=True)
+    if request_res:
+        if request_res.get("event") == "order:paid":
+            try:
+                request_data = request_res["data"]
+                telegram_id = request_data["custom_fields"]["tgid"]
+                package = request_data["custom_fields"]["p"]
+                timing = request_data["custom_fields"]["t"]
+                duration = 7 if timing == "w" else 30
+                u = add_or_update_user(telegram_id, package, duration)
+                bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
+                bot.send_message(owner, f"Just got an order from telegram user @{bot.get_chat(u.id).username}.\n\nOrder details:\n"\
+                                    f"{package} Groups\nExpiring: {u.end_time.strftime('%I:%M %p %d %b, %Y')}\n\nYou will be notified when their message comes")
+            except:
+                invoice_url = "https://dashboard.sellix.io/invoices/"+request_data["status_history"][1]["invoice_id"]
+                bot.send_message(owner, f"An order was paid but it seems the person didn't pay from the bot or there has been a mixup somewhere.\n\nGo to your <a href='{invoice_url}'>sellix dashboard</a> to see the invoice")
+    return Response(status=200)
 
 @app.route("/add-sub", methods=["GET", "POST"])
 def add_sub():
@@ -106,22 +114,24 @@ def add_sub():
             frequency = request.form["freq"]
             duration = 7 if frequency == "w" else 30
             stime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
-            etime = stime+timedelta(duration)
             bot.get_chat(user_id)
-            add_or_update_user(user_id, package, stime, etime)
+            add_or_update_user(user_id, package, duration, stime)
             messages.append(("User added successfully", "success"),)
         except:
             messages.append(("An error occured", "danger"),)
         return render_template("add-sub.html", user_id=tgid, packages=packages, flash=messages)
     return render_template("add-sub.html", user_id=request.args.get("user_id"), packages=packages, flash=messages)
 
-def add_or_update_user(telegram_id, package, stime, etime):
-    user = User.query.get(int(telegram_id))
-    if not user:
-        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
-        db.session.add(user)
-    else:
+def add_or_update_user(telegram_id, package, duration, stime = datetime.now()):
+    user = db.session.query(User).get(int(telegram_id))
+    if user:
         user.package = package
         user.start_time = stime
+        etime = max(user.end_time, stime)+timedelta(duration)
         user.end_time = etime
+    else:
+        etime = stime+timedelta(duration)
+        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
+        db.session.add(user)
     db.session.commit()
+    return user
