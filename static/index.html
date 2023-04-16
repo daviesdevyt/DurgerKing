@@ -103,7 +103,11 @@
               <ul class="overflow-auto" c-selection style="max-height: 150px; font-size:1.1rem;">
                 <small>Selected: <currency></currency></small>
                 {% for (i, item) in gateways %}
-                <div class="col-12 rounded currency py-2" value="{{item}}"><img src="https://cryptoicons.org/api/icon/{{tags[i]}}/32"> {{item|title}}</div>
+                {% if tags[i] in ["matic", "sol"] %}
+                <div class="col-12 rounded currency py-2" value="{{item}}"><img src="/img/icons/{{tags[i]}}.png" height="32" width="32"> {{item|title}}</div>
+                {% else %}
+                <div class="col-12 rounded currency py-2" value="{{item}}"><img src="https://coinicons-api.vercel.app/api/icon/{{tags[i]}}" height="32" width="32"> {{item|title}}</div>
+                {% endif %}
                 {% endfor %}
               </ul>
               <div class="d-flex justify-content-center py-3">

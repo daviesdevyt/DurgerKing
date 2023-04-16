@@ -80,6 +80,14 @@ def account(callback: CallbackQuery):
         bot.edit_message_text(f"User ID: {message.chat.id}\nUsername: {message.chat.username}\n"
                               f"\nPackage: {user.package} Groups\nExpiring: {end}", message.chat.id, message.id, parse_mode="markdown", reply_markup=account_markup)
 
+    elif data == "view_tracking":
+        user_message = user.message
+        if user_message or user_message == "":
+            msg_id, chat_id = user_message.split(":")
+            bot.forward_message(message.chat.id, chat_id, msg_id)
+        else:
+            bot.send_message(message.chat.id, 'You have no current message set')
+
     elif data == "edit_message":
         user_message = user.message
         if user_message or user_message == "":
