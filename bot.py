@@ -1,14 +1,13 @@
 from telebot import TeleBot
 from telebot.types import CallbackQuery, Message
-from .tgkeyboards import *
-from .db import session, User
-from .config import bot_token, owner
+from tgkeyboards import *
+from db import session, User
+from config import bot_token, owner
 from datetime import datetime
 
 bot = TeleBot(bot_token, parse_mode="HTML")
 
 start_message = "<b>Let’s get started</b> 🎉\n\nPlease tap the button below to subscribe!"
-
 
 @bot.message_handler(commands=['help', 'start'])
 def start(message: Message):
@@ -21,8 +20,7 @@ def start(message: Message):
 def admin(message: Message):
     bot.clear_step_handler(message)
     bot.send_message(
-        message.chat.id, "<b>Welcome back Admin!!</b>\nWhat will you like to do today?", reply_markup=Admin.get_kb())
-
+        message.chat.id, "<b>Welcome back Admin!!</b>\nWhat will you like to do today?", reply_markup=Admin.kb)
 
 @bot.message_handler(commands=["cancel"])
 def cancel(message: Message):
@@ -45,19 +43,30 @@ def account(callback: CallbackQuery):
         data = data.strip("admin_")
         if data == "get_all":
             all_users = session.query(User).all()
-            msg = "\n".join(map(generate, all_users))
-            if msg == "":
-                msg = "No users found"
-            bot.edit_message_text("To see details about any of them, Just click on their ids\n\n"+msg,
-                                  message.chat.id, message.id, parse_mode="markdown", reply_markup=Admin.get_kb())
-            bot.register_next_step_handler(message, get_subscriber_data)
+            kb = InlineKeyboardMarkup()
+            kb.add(*[InlineKeyboardButton("@"+str(user.username), callback_data=f"admin_view_sub:{user.id}") for user in all_users])
+            bot.edit_message_text("What user do you want to see", message.chat.id, message.id, reply_markup=kb)
+
+        elif data.startswith("view_sub"):
+            _, uid = data.split(":")
+            user = session.query(User).get(int(uid))
+            if not user:
+                bot.edit_message_text(message, f"User \"{uid}\" doesnt exist", reply_markup=InlineKeyboardMarkup().add(Admin.view_sub_back))
+                return
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("Get message", callback_data=f"admin_getmsg_{user.message}"))
+            kb.add(InlineKeyboardButton("Edit subscription", web_app=WebAppInfo(url+"/add-sub?tg_id="+str(message.chat.id)+"&user_id="+uid)))
+            kb.add(Admin.view_sub_back)
+            end = user.end_time.strftime("%I:%M %p %d %b, %Y")
+            bot.edit_message_text(f"User ID: {uid}\nUsername: @{user.username}\n"
+                            f"\nPackage: {user.package} Groups\nExpiring: {end}",message.chat.id, message.id, reply_markup=kb)
+        
         elif data.startswith("getmsg_"):
             data = data.strip("getmsg_")
             msg_id, chat_id = data.split(":")
             bot.forward_message(owner, chat_id, msg_id)
         elif data == "back":
-            bot.edit_message_text("<b>Welcome back Admin!!</b>\nWhat will you like to do today?",
-                                  message.chat.id, message.id, reply_markup=Admin.get_kb())
+            bot.edit_message_text("<b>Welcome back Admin!!</b>\nWhat will you like to do today?", message.chat.id, message.id, reply_markup=Admin.kb)
         return
 
     user = session.query(User).get(message.chat.id)
@@ -98,38 +107,6 @@ def account(callback: CallbackQuery):
         bot.register_next_step_handler(message, set_message)
 
 
-def get_subscriber_data(message: Message):
-    uid = message.text[1:]
-    try:
-        user = session.query(User).get(int(uid))
-        if not user:
-            raise Exception()
-    except ValueError:
-        funcs = {"start": start, "cancel": cancel}
-        f = funcs.get(uid)
-        if f:
-            f(message)
-            return
-        admin(message)
-        return
-    except:
-        bot.reply_to(message, f"User \"{uid}\" doesnt exist")
-        bot.clear_step_handler(message)
-        return
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("Get message",
-           callback_data=f"admin_getmsg_{user.message}"))
-    end = user.end_time.strftime("%I:%M %p %d %b, %Y")
-    bot.send_message(message.chat.id, f"User ID: {uid}\nUsername: {bot.get_chat(uid).username}\n"
-                     f"\nPackage: {user.package} Groups\nExpiring: {end}", parse_mode="markdown", reply_markup=kb)
-    bot.register_next_step_handler(message, get_subscriber_data)
-
-
-def generate(user: User):
-    end = user.end_time.strftime("%I:%M %p %d %b")
-    return f"/{user.id} - Expiring {end}"
-
-
 def set_message(message: Message):
     if message.text == "/cancel":
         cancel(message)
@@ -148,3 +125,5 @@ def set_message(message: Message):
 @bot.message_handler(func=lambda message: True)
 def echo_message(message: Message):
     start(message)
+
+bot.infinity_polling()

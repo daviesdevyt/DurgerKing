@@ -1,11 +1,11 @@
 from flask import Flask, request, render_template, Response, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import telebot, time
 from sellix import Sellix
 from flask_migrate import Migrate
 import os, dotenv
 from datetime import datetime, timedelta
-from .config import packages, url
+from .config import packages, url, view_counts, bot_token, owner
+from telebot import TeleBot
 
 dotenv.load_dotenv()
 
@@ -24,15 +24,8 @@ gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "BITCOIN_CASH", "LITECOIN", "
 tags = ["eth", "bnb", "btc", "bch", "ltc", "xmr", "sol", "usdt", "usdc", "matic", "trx"]
 
 from .models import User
-from .bot import bot, owner
-WEBHOOK_URL = url+"/telegram"
 
-@app.route("/set")
-def set_wh():
-    bot.remove_webhook()
-    time.sleep(0.5)
-    bot.set_webhook(url=WEBHOOK_URL)
-    return ""
+bot = TeleBot(bot_token, parse_mode="HTML")
 
 @app.route("/")
 def home():
@@ -40,17 +33,7 @@ def home():
     if not user_id:
         uname = bot.get_me().username
         return Response(f"Could not access this page. Got to <a href='t.me/{uname}'>@{uname}</a>")
-    return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=enumerate(gateways), tags=tags)
-
-@app.route("/telegram", methods=["POST"])
-def telegram_bot():
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return ''
-    else:   
-        abort(403)
+    return render_template("index.html", tgid=user_id, packages_details=packages, packages=enumerate(packages.keys()), gateways=enumerate(gateways), view_counts=view_counts, tags=tags)
 
 @app.route("/make-order", methods=["POST"])
 def pay():
@@ -108,30 +91,35 @@ def add_sub():
                 raise Exception()
             user_id = request.form["user_id"]
             package = request.form["package"]
-            date = request.form["date"]
-            time = request.form.get("stime")
-            if not time: time = "00:00"
+            date = request.form.get("enddate")
             frequency = request.form["freq"]
             duration = 7 if frequency == "w" else 30
-            stime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
+            if date:
+                date = datetime.strptime(f"{date}", '%Y-%m-%d')
             bot.get_chat(user_id)
-            add_or_update_user(user_id, package, duration, stime)
+            add_or_update_user(user_id, package, duration, etime=date)
             messages.append(("User added successfully", "success"),)
         except:
             messages.append(("An error occured", "danger"),)
-        return render_template("add-sub.html", user_id=tgid, packages=packages, flash=messages)
-    return render_template("add-sub.html", user_id=request.args.get("user_id"), packages=packages, flash=messages)
+        return render_template("add-sub.html", tg_id=tgid, packages=packages, flash=messages, user_id=None, username=None)
+    uid = request.args.get("user_id")
+    username = None
+    if uid:
+        username = bot.get_chat(uid).username
+    return render_template("add-sub.html", tg_id=request.args.get("tg_id"), packages=packages, flash=messages, user_id=uid, username=username)
 
-def add_or_update_user(telegram_id, package, duration, stime = datetime.now()):
+def add_or_update_user(telegram_id, package, duration, stime = datetime.now(), etime=None):
     user = db.session.query(User).get(int(telegram_id))
     if user:
         user.package = package
         user.start_time = stime
-        etime = max(user.end_time, stime)+timedelta(duration)
+        if not etime:
+            etime = max(user.end_time, stime)+timedelta(duration)
         user.end_time = etime
     else:
-        etime = stime+timedelta(duration)
-        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime)
+        if not etime:
+            etime = stime+timedelta(duration)
+        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime, username=bot.get_chat(telegram_id).username)
         db.session.add(user)
     db.session.commit()
     return user

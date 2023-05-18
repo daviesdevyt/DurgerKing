@@ -10,10 +10,12 @@ btnFrequency.click(e => {
     if (current == "w") {
         btnFrequency.data("freq", "m")
         btnFrequency.html("Monthly")
+        $(".duration").html("Monthly")
     }
     else if (current == "m") {
         btnFrequency.data("freq", "w")
         btnFrequency.html("Weekly")
+        $(".duration").html("Weekly")
     }
     choose()
 })
@@ -35,7 +37,11 @@ function choose() {
     timing = btnFrequency.data("freq")
     for (let i = 0; i < obj_keys.length; i++) {
         let price = document.querySelector(".price" + i)
+        let duration = document.querySelector(".view-count" + i)
+        if (timing == "m") duration.innerHTML = view_counts[i][1]
+        else duration.innerHTML = view_counts[i][0]
         price.innerHTML = "$" + packages[obj_keys[i]][timing]
+
     }
 }
 choose()

@@ -14,6 +14,7 @@ class User(base):
     package = Column(String(8))
     start_time = Column(DateTime, default=func.now())
     end_time = Column(DateTime)
+    username = Column(String(200), default="...")
 
 engine = create_engine(os.getenv("DB_URL"))
 connection = engine.connect()

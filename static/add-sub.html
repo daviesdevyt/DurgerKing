@@ -83,6 +83,19 @@
           {% for msg, category in flash %}
           <div class="alert alert-{{category}}" role="alert">{{msg}}</div>
           {% endfor %}
+          {% if user_id %}
+          <input type="hidden" name="user_id" value="{{user_id}}">
+          <div class="row">
+            <div class="col-lg-6 col-md-12">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="uid">Telegram User *</label>
+                  <input type="text" class="form-control input" value="@{{username}}" id="uid" readonly/>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
           <div class="row">
             <div class="col-lg-6 col-md-12">
               <div class="col-md-6">
@@ -93,6 +106,7 @@
               </div>
             </div>
           </div>
+          {% endif %}
           <div class="row">
             <div class="col-lg-6 col-md-12">
               <div class="col-md-6">
@@ -111,39 +125,32 @@
             <div class="col-lg-6 col-md-12">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="date">Date *</label>
-                  <input type="date" class="form-control input" name="date" id="date" required />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-lg-6 col-md-12">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="time">Time</label>
-                  <input type="time" class="form-control input" name="stime" id="time" />
-                  <small class="form-text text-muted">Defaults to 12:00AM</small>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-lg-6 col-md-12">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="freq">Frequency *</label>
-                  <select name="freq" id="freq" class="form-control input" required>
+                  <label for="freq">Frequency</label>
+                  <select name="freq" id="freq" class="form-control input">
                     <option value="w">Weekly</option>
                     <option value="m">Monthly</option>
                   </select>
+                  <small class="form-text text-muted">Will be ignored if End Date is provided</small>
                 </div>
               </div>
             </div>
           </div>
-          <input type="hidden" name="tgid" value="{{user_id}}">
+          <div class="row">
+            <div class="col-lg-6 col-md-12">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="enddate">End Date</label>
+                  <input type="date" date class="form-control input" name="enddate" id="enddate" min=""/>
+                  <script>
+                    document.querySelector("[date]").setAttribute("min", new Date().toJSON().split('T')[0])
+                  </script>
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="tgid" value="{{tg_id}}">
           <div class="d-flex justify-content-center py-3">
-            <button type="submit" class="btn btn-primary order">Add User</button>
+            <button type="submit" class="btn btn-primary order">{% if user_id %}Update {{username}}{%else%}Add User{%enddif%}</button>
           </div>
         </form>
       </div>

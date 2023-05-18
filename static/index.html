@@ -43,6 +43,7 @@
     <script>
       var tgid = "{{tgid}}"
       var packages = {{packages_details|tojson}}
+      var view_counts = {{view_counts|tojson}}
     </script>
     <link rel="stylesheet" href="css/css.css" />
     <script defer src="js.js"></script>
@@ -74,7 +75,28 @@
                 <h3>{{pkg}} Groups</h3>
                 <h2 class="price price{{i}}"><span>$</span>0</h2>
                 <div id="collapse{{i}}" class="collapse">
-                  <div class="card-body py-3">Advertise your post on {{pkg}} groups</div>
+                  <div class="card-body py-3">
+                    <p style="color:aliceblue;">Have your ad post in {{pkg}}<br>
+                      markets every 30 minutes
+                      <br>
+                      Features:<br>
+                      •Forwards Messages<br>
+                      •Premium Emojis<br>
+                      •Post with Picture/Video<br>
+                      •Post with embedded buttons <br>
+                      •Post every 30 Minutes <br>
+                      •Edit Profile Picture<br>
+                      •Edit Username<br>
+                      •Edit Bio<br> 
+                      •View Tracking<br> 
+                      •24/7 Uptime<br>
+                      <br><br>
+                      Expected traffic: <br>
+                      <i class="view-count{{i}}">2,500 - 3,000 Views</i><br>
+                      <br>
+                      Duration: <br>
+                      <i class="duration">Monthly</i></p>
+                    </div>
                 </div>
               </div>
               <div class="plan-button">
