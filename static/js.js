@@ -51,9 +51,9 @@ function selectCurrency(e){
         let div = document.querySelector(`[value="${paymentMethod}"]`)
         div.classList.remove("border", "border-primary")
     }
-    paymentMethod = e.target.getAttribute("value")
+    paymentMethod = e.currentTarget.getAttribute("value")
     $("currency").html(paymentMethod)
-    e.target.classList.add("border","border-primary")
+    e.currentTarget.classList.add("border","border-primary")
 }
 
 $(".order").click(orderClicked)

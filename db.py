@@ -15,6 +15,7 @@ class User(base):
     start_time = Column(DateTime, default=func.now())
     end_time = Column(DateTime)
     username = Column(String(200), default="...")
+    last_changed_message = Column(DateTime, nullable=True)
 
 engine = create_engine(os.getenv("DB_URL"))
 connection = engine.connect()

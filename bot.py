@@ -45,6 +45,7 @@ def account(callback: CallbackQuery):
             all_users = session.query(User).all()
             kb = InlineKeyboardMarkup()
             kb.add(*[InlineKeyboardButton("@"+str(user.username), callback_data=f"admin_view_sub:{user.id}") for user in all_users])
+            kb.add(back_btn("admin_back"))
             bot.edit_message_text("What user do you want to see", message.chat.id, message.id, reply_markup=kb)
 
         elif data.startswith("view_sub"):
@@ -54,7 +55,8 @@ def account(callback: CallbackQuery):
                 bot.edit_message_text(message, f"User \"{uid}\" doesnt exist", reply_markup=InlineKeyboardMarkup().add(Admin.view_sub_back))
                 return
             kb = InlineKeyboardMarkup()
-            kb.add(InlineKeyboardButton("Get message", callback_data=f"admin_getmsg_{user.message}"))
+            if user.message:
+                kb.add(InlineKeyboardButton("Get message", callback_data=f"admin_getmsg_{user.message}"))
             kb.add(InlineKeyboardButton("Edit subscription", web_app=WebAppInfo(url+"/add-sub?tg_id="+str(message.chat.id)+"&user_id="+uid)))
             kb.add(Admin.view_sub_back)
             end = user.end_time.strftime("%I:%M %p %d %b, %Y")
@@ -98,29 +100,39 @@ def account(callback: CallbackQuery):
             bot.send_message(message.chat.id, 'You have no current message set')
 
     elif data == "edit_message":
+        if user.last_changed_message:
+            if (datetime.now() - user.last_changed_message).days < 2:
+                bot.edit_message_text("You updated your message recently. You need to wait 48 hours before you can edit your message again",message.chat.id, message.id, reply_markup=back_btn("account"))
+                return
         user_message = user.message
-        if user_message or user_message == "":
+        if user_message or user_message != "":
             msg_id, chat_id = user_message.split(":")
             bot.forward_message(message.chat.id, chat_id, msg_id)
         bot.send_message(
             message.chat.id, f"{'That is your current message ☝️' if user_message else 'You have no current message set'}\n\nSend the new message you want to set\n\nUse /cancel to leave it unchanged", parse_mode="markdown")
         bot.register_next_step_handler(message, set_message)
 
+    elif data.startswith("accept_change"):
+        _, msg_id, chat_id = data.split(":")
+        user.last_changed_message = datetime.now()
+        user.message = f"{msg_id}:{chat_id}"
+        session.commit()
+        bot.send_message(message.chat.id, f"Message updated\n\nYour changes will be viable within 24 hours", reply_markup=account_markup)
+        bot.send_message(owner, f"Newest Message from @{message.chat.username}")
+        bot.forward_message(owner, chat_id, msg_id)
+    
+    elif data == "decline_change":
+        bot.edit_message_text("Changes have been declined", message.chat.id, message.id, reply_markup=back_btn("account"))
+
 
 def set_message(message: Message):
     if message.text == "/cancel":
         cancel(message)
         return
-    user = session.query(User).get(message.chat.id)
     msg_id, chat_id = message.id, message.chat.id
-    user.message = f"{msg_id}:{chat_id}"
-    session.commit()
-    bot.reply_to(message, f"Message updated\n\nYour changes will be viable within 24 hours",
-                 parse_mode="markdown", reply_markup=account_markup)
-    bot.send_message(
-        owner, f"Newest Message from @{message.chat.username}", parse_mode="markdown")
-    bot.forward_message(owner, chat_id, msg_id)
-
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton("Yes", callback_data=f"accept_change:{msg_id}:{chat_id}"), InlineKeyboardButton("No", callback_data="decline_change"))
+    bot.send_message(message.chat.id, "Are you sure you want to make this change you will not be able to edit your message for 48 hours", reply_markup=kb)
 
 @bot.message_handler(func=lambda message: True)
 def echo_message(message: Message):
