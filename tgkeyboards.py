@@ -30,7 +30,10 @@ class Admin:
     kb = InlineKeyboardMarkup()
     get_all = InlineKeyboardButton("See all subscriptions", callback_data="admin_get_all")
     new_sub_form = InlineKeyboardButton("Add subscriber", web_app=WebAppInfo(url+"/add-sub?tg_id="+str(owner)))
-    back_btn = InlineKeyboardButton("Back", callback_data="admin_back")
+    def back_btn(step: str):
+        back_btn = InlineKeyboardButton("Back", callback_data=step)
+        return back_btn
+
     kb.add(get_all)
     kb.add(new_sub_form)
 

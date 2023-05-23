@@ -45,7 +45,7 @@ def account(callback: CallbackQuery):
             all_users = session.query(User).all()
             kb = InlineKeyboardMarkup()
             kb.add(*[InlineKeyboardButton("@"+str(user.username), callback_data=f"admin_view_sub:{user.id}") for user in all_users])
-            kb.add(back_btn("admin_back"))
+            kb.add(Admin.back_btn("admin_back"))
             bot.edit_message_text("What user do you want to see", message.chat.id, message.id, reply_markup=kb)
 
         elif data.startswith("view_sub"):
@@ -55,18 +55,31 @@ def account(callback: CallbackQuery):
                 bot.edit_message_text(message, f"User \"{uid}\" doesnt exist", reply_markup=InlineKeyboardMarkup().add(Admin.view_sub_back))
                 return
             kb = InlineKeyboardMarkup()
+            get_set = []
             if user.message:
-                kb.add(InlineKeyboardButton("Get message", callback_data=f"admin_getmsg_{user.message}"))
+                get_set.append(InlineKeyboardButton("Get message", callback_data=f"admin_getmsg_{user.message}"))
+            get_set.append(InlineKeyboardButton("Set message", callback_data=f"admin_setmsg_{user.id}"))
+            kb.add(*get_set)
             kb.add(InlineKeyboardButton("Edit subscription", web_app=WebAppInfo(url+"/add-sub?tg_id="+str(message.chat.id)+"&user_id="+uid)))
             kb.add(Admin.view_sub_back)
             end = user.end_time.strftime("%I:%M %p %d %b, %Y")
             bot.edit_message_text(f"User ID: {uid}\nUsername: @{user.username}\n"
                             f"\nPackage: {user.package} Groups\nExpiring: {end}",message.chat.id, message.id, reply_markup=kb)
         
+        elif data.startswith("setmsg_"):
+            user_id = data.strip("setmsg_")
+            user_message = session.query(User).get(user_id).message
+            if user_message:
+                msg_id, chat_id = user_message.split(":")
+                bot.forward_message(owner, chat_id, msg_id)
+            bot.send_message(message.chat.id, "Previous message ☝️.\nSend or forward the new message you want to set\n\nUse /cancel to leave it unchanged")
+            bot.register_next_step_handler(message, admin_set_message, user_id)
+
         elif data.startswith("getmsg_"):
             data = data.strip("getmsg_")
             msg_id, chat_id = data.split(":")
             bot.forward_message(owner, chat_id, msg_id)
+
         elif data == "back":
             bot.edit_message_text("<b>Welcome back Admin!!</b>\nWhat will you like to do today?", message.chat.id, message.id, reply_markup=Admin.kb)
         return
@@ -93,7 +106,7 @@ def account(callback: CallbackQuery):
 
     elif data == "view_tracking":
         user_message = user.message
-        if user_message or user_message == "":
+        if user_message or user_message != "":
             msg_id, chat_id = user_message.split(":")
             bot.forward_message(message.chat.id, chat_id, msg_id)
         else:
@@ -133,6 +146,16 @@ def set_message(message: Message):
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("Yes", callback_data=f"accept_change:{msg_id}:{chat_id}"), InlineKeyboardButton("No", callback_data="decline_change"))
     bot.send_message(message.chat.id, "Are you sure you want to make this change you will not be able to edit your message for 48 hours", reply_markup=kb)
+
+def admin_set_message(message: Message, user_id):
+    if message.text == "/cancel":
+        cancel(message)
+        return
+    user = session.query(User).get(user_id)
+    msg_id, chat_id = message.id, message.chat.id
+    user.message = f"{msg_id}:{chat_id}"
+    session.commit()
+    bot.send_message(message.chat.id, f"Message updated", reply_markup=InlineKeyboardMarkup().add(Admin.back_btn(f"admin_view_sub:{user.id}")))
 
 @bot.message_handler(func=lambda message: True)
 def echo_message(message: Message):
