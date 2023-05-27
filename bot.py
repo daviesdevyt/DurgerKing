@@ -111,6 +111,17 @@ def account(callback: CallbackQuery):
             bot.forward_message(message.chat.id, chat_id, msg_id)
         else:
             bot.send_message(message.chat.id, 'You have no current message set')
+    elif data == "edit_bot":
+        bot.edit_message_text("Choose:", message.chat.id, message.id, reply_markup=edit_bot_markup)
+
+    elif data == "bot_profile_pic":
+        bot.edit_message_text("Send a photo\n\nUse /cancel to cancel", message.chat.id, message.id)
+        bot.register_next_step_handler(message, new_bot_pic)
+
+    elif data.startswith("bot_"):
+        data = data[4:]
+        bot.edit_message_text(f"Send a {data}\n\nUse /cancel to cancel", message.chat.id, message.id)
+        bot.register_next_step_handler(message, new_bot_text, data)
 
     elif data == "edit_message":
         if user.last_changed_message:
@@ -137,6 +148,28 @@ def account(callback: CallbackQuery):
     elif data == "decline_change":
         bot.edit_message_text("Changes have been declined", message.chat.id, message.id, reply_markup=back_btn("account"))
 
+def new_bot_pic(message:Message):
+    if message.text == "/cancel":
+        cancel(message)
+        return
+    if not message.photo:
+        bot.send_message(message.chat.id, "Please send a photo compressed")
+        bot.register_next_step_handler(message, new_bot_pic)
+        return
+    photo = message.photo[1].file_id
+    bot.send_photo(owner, photo, f"New bot profile photo for @{message.chat.username}")
+    bot.send_message(message.chat.id, "Bot profile picture updated!", reply_markup=back_btn("edit_bot"))
+
+def new_bot_text(message:Message, data):
+    if message.text == "/cancel":
+        cancel(message)
+        return
+    if not message.text:
+        bot.send_message(message.chat.id, "Please send a text message")
+        bot.register_next_step_handler(message, new_bot_text, data)
+        return
+    bot.send_message(owner, f"New bot {data} for @{message.chat.username}\n\n`{message.text}`", parse_mode="markdown")
+    bot.send_message(message.chat.id, f"Bot {data} updated!", reply_markup=back_btn("edit_bot"))
 
 def set_message(message: Message):
     if message.text == "/cancel":

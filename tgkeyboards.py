@@ -12,13 +12,19 @@ def start_inline_markup(user_id):
     return start_markup
 
 view_tracking = InlineKeyboardButton("View tracking", callback_data="view_tracking")
-edit_message = InlineKeyboardButton("Edit message", callback_data="edit_message")
 manage_subscription = InlineKeyboardButton("Manage subscription", callback_data="manage_sub")
 
 account_markup = InlineKeyboardMarkup()
-account_markup.add(view_tracking, edit_message)
+account_markup.add(view_tracking)
 account_markup.row(manage_subscription)
+account_markup.row(InlineKeyboardButton("Edit bot", callback_data="edit_bot"))
 
+
+edit_bot_markup = InlineKeyboardMarkup()
+edit_bot_markup.add(InlineKeyboardButton("Edit Profile Pic", callback_data="bot_profile_pic"), InlineKeyboardButton("Edit Bio", callback_data="bot_bio"))
+edit_bot_markup.add(InlineKeyboardButton("Edit Username", callback_data="bot_username"), InlineKeyboardButton("Set response", callback_data="bot_response"))
+edit_bot_markup.add(InlineKeyboardButton("Change message", callback_data="edit_message"))
+edit_bot_markup.add(InlineKeyboardButton("back", callback_data="account"))
 
 def back_btn(step: str):
     markup = InlineKeyboardMarkup()
