@@ -1,24 +1,18 @@
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
 from config import url, owner
 
 def start_inline_markup(user_id):
     web_app = WebAppInfo(url=url+f"?user_id={user_id}")
-    order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
-    account_inline_btn = InlineKeyboardButton("ACCOUNT", callback_data="account")
-    support_inline_btn = InlineKeyboardButton("SUPPORT", url="https://t.me/adbothost3")
-    start_markup = InlineKeyboardMarkup()
-    start_markup.add(order_inline_btn)
-    start_markup.row(account_inline_btn, support_inline_btn)
+    order = KeyboardButton("🛍️ORDER NOW", web_app=web_app)
+    subscription = KeyboardButton("⚙️SUBSCRIPTION")
+    view_tracking = KeyboardButton("👁️VIEW TRACKING")
+    edit_bot = InlineKeyboardButton("🤖EDIT BOT")
+    support = KeyboardButton("📞SUPPORT")
+    start_markup = ReplyKeyboardMarkup()
+    start_markup.add(order)
+    start_markup.row(subscription, view_tracking)
+    start_markup.row(edit_bot, support)
     return start_markup
-
-view_tracking = InlineKeyboardButton("View tracking", callback_data="view_tracking")
-manage_subscription = InlineKeyboardButton("Manage subscription", callback_data="manage_sub")
-
-account_markup = InlineKeyboardMarkup()
-account_markup.add(view_tracking)
-account_markup.row(manage_subscription)
-account_markup.row(InlineKeyboardButton("Edit bot", callback_data="edit_bot"))
-
 
 edit_bot_markup = InlineKeyboardMarkup()
 edit_bot_markup.add(InlineKeyboardButton("Edit Profile Pic", callback_data="bot_profile_pic"), InlineKeyboardButton("Edit Bio", callback_data="bot_bio"))

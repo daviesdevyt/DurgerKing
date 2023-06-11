@@ -27,8 +27,29 @@ def cancel(message: Message):
     bot.clear_step_handler(message)
     bot.send_message(message.chat.id, "Operation cancelled")
 
+@bot.message_handler(func=lambda msg: True)
+def new_message(message: Message):
+    user = session.query(User).get(message.chat.id)
+    if user:
+        if message.text == "⚙️SUBSCRIPTION":
+            end = user.end_time.strftime("%I:%M %p %d %b, %Y")
+            bot.send_message(message.chat.id, f"User ID: {message.chat.id}\nUsername: {message.chat.username}\n"
+                                f"\nPackage: {user.package} Groups\nExpiring: {end}", parse_mode="markdown")
+        elif message.text == "👁️VIEW TRACKING":
+            user_message = user.message
+            if user_message or user_message != "":
+                msg_id, chat_id = user_message.split(":")
+                bot.forward_message(message.chat.id, chat_id, msg_id)
+            else:
+                bot.send_message(message.chat.id, 'You have no current message set')
+        elif message.text == "🤖EDIT BOT":
+            bot.send_message(message.chat.id, "Choose:", reply_markup=edit_bot_markup)
+        elif message.text == "📞SUPPORT":
+            bot.send_message(message.chat.id, "Contact @adhostbot3 by clicking the button below", reply_markup=InlineKeyboardMarkup().add(InlineKeyboardButton("Contact", url="https://t.me/adbothost3")))
+    else:
+        bot.send_message(message.chat.id, "You have no active subscription.\nClick \"🛍️ORDER NOW\" below to choose a subscription")
 
-@bot.callback_query_handler(func=lambda call: call.data != None)
+@bot.callback_query_handler(func=lambda call: call.message.text != None)
 def account(callback: CallbackQuery):
     message = callback.message
     data = callback.data
@@ -86,31 +107,15 @@ def account(callback: CallbackQuery):
 
     user = session.query(User).get(message.chat.id)
     if not user or user.end_time < datetime.now():
-        web_app = WebAppInfo(url=url+f"?user_id={message.chat.id}")
-        order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
-        markup = InlineKeyboardMarkup()
-        markup.add(order_inline_btn)
-        bot.edit_message_text(f"Your telegram ID: `{message.chat.id}`\n\nYou have no active subscription.\nUse the button below to choose a subscription",
-                              message.chat.id, message.id, reply_markup=start_inline_markup(message.chat.id), parse_mode="markdown")
+        # web_app = WebAppInfo(url=url+f"?user_id={message.chat.id}")
+        # order_inline_btn = InlineKeyboardButton("ORDER NOW", web_app=web_app)
+        # markup = InlineKeyboardMarkup()
+        # markup.add(order_inline_btn)
+        bot.answer_callback_query(callback.id, "You have no active subscription.\nUse the button below to choose a subscription", True)
+        # bot.edit_message_text(f"Your telegram ID: `{message.chat.id}`\n\nYou have no active subscription.\nUse the button below to choose a subscription",
+        #                       message.chat.id, message.id, reply_markup=start_inline_markup(message.chat.id), parse_mode="markdown")
         return
 
-    if data == "account":
-        bot.clear_step_handler(message)
-        bot.edit_message_text(f"Hello <b>{message.chat.username}</b>.\nWhat do you want to do today?",
-                              message.chat.id, message.id, reply_markup=account_markup)
-
-    elif data == "manage_sub":
-        end = user.end_time.strftime("%I:%M %p %d %b, %Y")
-        bot.edit_message_text(f"User ID: {message.chat.id}\nUsername: {message.chat.username}\n"
-                              f"\nPackage: {user.package} Groups\nExpiring: {end}", message.chat.id, message.id, parse_mode="markdown", reply_markup=account_markup)
-
-    elif data == "view_tracking":
-        user_message = user.message
-        if user_message or user_message != "":
-            msg_id, chat_id = user_message.split(":")
-            bot.forward_message(message.chat.id, chat_id, msg_id)
-        else:
-            bot.send_message(message.chat.id, 'You have no current message set')
     elif data == "edit_bot":
         bot.edit_message_text("Choose:", message.chat.id, message.id, reply_markup=edit_bot_markup)
 
@@ -141,7 +146,7 @@ def account(callback: CallbackQuery):
         user.last_changed_message = datetime.now()
         user.message = f"{msg_id}:{chat_id}"
         session.commit()
-        bot.send_message(message.chat.id, f"Message updated\n\nYour changes will be viable within 24 hours", reply_markup=account_markup)
+        bot.send_message(message.chat.id, f"Message updated\n\nYour changes will be viable within 24 hours")
         bot.send_message(owner, f"Newest Message from @{message.chat.username}")
         bot.forward_message(owner, chat_id, msg_id)
     
