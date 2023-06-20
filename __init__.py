@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, Response, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sellix import Sellix
 from flask_migrate import Migrate
-import os, dotenv
+import os, dotenv, json
 from datetime import datetime, timedelta
 from .config import packages, url, view_counts, bot_token, owner
 from telebot import TeleBot
@@ -23,7 +23,7 @@ migrate = Migrate(app, db)
 gateways = ["ETHEREUM", "BINANCE_COIN", "BITCOIN", "BITCOIN_CASH", "LITECOIN", "MONERO", "SOLANA", "USDT", "USDC", "POLYGON", "TRON"]
 tags = ["eth", "bnb", "btc", "bch", "ltc", "xmr", "sol", "usdt", "usdc", "matic", "trx"]
 
-from .models import User
+from .models import User, Bot
 
 bot = TeleBot(bot_token, parse_mode="HTML")
 
@@ -72,9 +72,10 @@ def customer_paid_webhook():
                 package = request_data["custom_fields"]["p"]
                 timing = request_data["custom_fields"]["t"]
                 duration = 7 if timing == "w" else 30
-                u = add_or_update_user(telegram_id, package, duration)
+                u = add_or_update_user(telegram_id, package, duration, username=bot.get_chat(telegram_id).username)
+                bot_allocation(package, u)
                 bot.send_message(telegram_id, "Thank you for your order! Your advertisements will be active & live within 24 - 48 Hours!\nYou will receive a notification when your subscription begins.")
-                bot.send_message(owner, f"Just got an order from telegram user @{bot.get_chat(u.id).username}.\n\nOrder details:\n"\
+                bot.send_message(owner, f"Just got an order from telegram user @{u.username}.\n\nOrder details:\n"\
                                     f"{package} Groups\nExpiring: {u.end_time.strftime('%I:%M %p %d %b, %Y')}\n\nYou will be notified when their message comes")
             except:
                 invoice_url = "https://dashboard.sellix.io/invoices/"+request_data["status_history"][1]["invoice_id"]
@@ -96,8 +97,9 @@ def add_sub():
             duration = 7 if frequency == "w" else 30
             if date:
                 date = datetime.strptime(f"{date}", '%Y-%m-%d')
-            bot.get_chat(user_id)
-            add_or_update_user(user_id, package, duration, etime=date)
+            tg_user = bot.get_chat(user_id)
+            user = add_or_update_user(user_id, package, duration, etime=date, username=tg_user.username)
+            bot_allocation(package, user)
             messages.append(("User added successfully", "success"),)
         except:
             messages.append(("An error occured", "danger"),)
@@ -108,7 +110,8 @@ def add_sub():
         username = bot.get_chat(uid).username
     return render_template("add-sub.html", tg_id=request.args.get("tg_id"), packages=packages, flash=messages, user_id=uid, username=username)
 
-def add_or_update_user(telegram_id, package, duration, stime = datetime.now(), etime=None):
+def add_or_update_user(telegram_id, package, duration, etime=None, username=None):
+    stime = datetime.now()
     user = db.session.query(User).get(int(telegram_id))
     if user:
         user.package = package
@@ -119,7 +122,31 @@ def add_or_update_user(telegram_id, package, duration, stime = datetime.now(), e
     else:
         if not etime:
             etime = stime+timedelta(duration)
-        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime, username=bot.get_chat(telegram_id).username)
+        user = User(id=int(telegram_id), package=package, start_time=stime, end_time=etime, username=username)
         db.session.add(user)
     db.session.commit()
     return user
+
+bot_packages = {
+    "250": 1,
+    "1000": 3,
+    "1500": 4,
+    "2500": 6,
+    "5000": 10
+}
+
+def bot_allocation(package, user):
+    new_bot_count = max(0, bot_packages[package] - len(user.bots))
+    try:
+        for i in range(new_bot_count):
+            db.session.add(Bot(phone=bots[0], user_id=user.username))
+            bots.pop(0)
+        db.session.commit()
+    except:
+        pass
+    else:
+        with open("numbers.json", "w") as f:
+            json.dump(bots, f)
+
+with open("numbers.json") as f:
+    bots = json.load(f)
