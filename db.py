@@ -15,6 +15,7 @@ class User(base):
     start_time = Column(DateTime, default=func.now())
     end_time = Column(DateTime)
     username = Column(String(200), default="...")
+    channel_message_id = Column(Integer, nullable=True)
     last_changed_message = Column(DateTime, nullable=True)
     bots = relationship("Bot")
 

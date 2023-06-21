@@ -9,6 +9,7 @@ class User(db.Model):
     start_time = db.Column(db.DateTime, default=func.now())
     end_time = db.Column(db.DateTime)
     last_changed_message = db.Column(db.DateTime, nullable=True)
+    channel_message_id = db.Column(db.Integer, nullable=True)
     bots = db.relationship("Bot")
 
 class Bot(db.Model):

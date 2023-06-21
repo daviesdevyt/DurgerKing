@@ -145,8 +145,9 @@ def account(callback: CallbackQuery):
         _, msg_id, chat_id = data.split(":")
         user.last_changed_message = datetime.now()
         user.message = f"{msg_id}:{chat_id}"
+        channel_message = bot.forward_message(-1001984299345, chat_id, msg_id)
+        user.channel_message_id = channel_message.id
         session.commit()
-        bot.forward_message(-1001984299345, chat_id, msg_id)
         bot.edit_message_text(f"Message updated\n\nYour changes will be viable within 24 hours", message.chat.id, message.id)
         bot.send_message(owner, f"Newest Message from @{message.chat.username}")
         bot.forward_message(owner, chat_id, msg_id)
